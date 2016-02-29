@@ -9,18 +9,23 @@
 import UIKit
 
 class RestaurantListTableViewController: UITableViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        listenForNotifications()
     }
-
-   
+    
+    func listenForNotifications() {
+        let notificationCenter = NSNotificationCenter.defaultCenter().addObserver(self, selector: "restaurantsUpdated:", name: RestaurantsUpdatedNotification, object: nil)
+    }
+    
+    func restaurantsUpdated(notification: NSNotification) {
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            self.tableView.reloadData()
+        }
+    }
+    
     @IBAction func addButtonTapped(sender: AnyObject) {
         setUpRestaurantAlert()
     }
@@ -35,7 +40,10 @@ class RestaurantListTableViewController: UITableViewController {
                 let name = textFields[0].text,
                 let address = textFields[1].text,
                 let category = textFields[2].text {
-                   
+                    
+                    let restaurant = Restaurant(name: name, category: address, address: category)
+                    RestaurantController.shareController.addRestaurant(restaurant)
+                    
             }
         }
         
@@ -56,70 +64,71 @@ class RestaurantListTableViewController: UITableViewController {
     
     
     // MARK: - Table view data source
-
+    
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
-
+    
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
-        return 1
+        
+        return RestaurantController.shareController.restaurants.count
     }
-
-
+    
+    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("restaurantCell", forIndexPath: indexPath)
-
-        cell.textLabel?.text = "Restaurant Name"
-        cell.detailTextLabel?.text = "Restaurant Address"
-
+        
+        let restaurant = RestaurantController.shareController.restaurants[indexPath.row]
+        cell.textLabel?.text = restaurant.name
+        cell.detailTextLabel?.text = restaurant.category
+        
         return cell
     }
-
-
+    
+    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    // Return false if you do not want the specified item to be editable.
+    return true
     }
     */
-
+    
     /*
     // Override to support editing the table view.
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    if editingStyle == .Delete {
+    // Delete the row from the data source
+    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+    } else if editingStyle == .Insert {
+    // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+    }
     }
     */
-
+    
     /*
     // Override to support rearranging the table view.
     override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
+    
     }
     */
-
+    
     /*
     // Override to support conditional rearranging of the table view.
     override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
+    // Return false if you do not want the item to be re-orderable.
+    return true
     }
     */
-
+    
     /*
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    // Get the new view controller using segue.destinationViewController.
+    // Pass the selected object to the new view controller.
     }
     */
-
+    
 }
